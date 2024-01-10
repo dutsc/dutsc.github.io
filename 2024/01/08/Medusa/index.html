@@ -27,8 +27,9 @@
 <meta property="og:image" content="https://cdn.jsdelivr.net/gh/dutsc/cloud-image/blog-img/202401090004746.png">
 <meta property="og:image" content="https://cdn.jsdelivr.net/gh/dutsc/cloud-image/blog-img/202401092257306.png">
 <meta property="og:image" content="https://cdn.jsdelivr.net/gh/dutsc/cloud-image/blog-img/202401092307390.gif">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/dutsc/cloud-image/blog-img/202401100915706.gif">
 <meta property="article:published_time" content="2024-01-08T14:28:42.000Z">
-<meta property="article:modified_time" content="2024-01-09T16:42:42.545Z">
+<meta property="article:modified_time" content="2024-01-10T02:02:13.729Z">
 <meta property="article:author" content="dutsc">
 <meta property="article:tag" content="科研">
 <meta name="twitter:card" content="summary_large_image">
@@ -270,7 +271,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          1.4k 字
+          1.7k 字
         
       </span>
     
@@ -282,7 +283,7 @@
         
         
           <!-- compatible with older versions-->
-          7 分钟
+          9 分钟
         
       </span>
     
@@ -332,7 +333,7 @@
               <p class="note note-info">
                 
                   
-                    本文最后更新于：1 分钟前
+                    本文最后更新于：14 小时前
                   
                 
               </p>
@@ -375,7 +376,38 @@
 </blockquote>
 <p><img src="https://cdn.jsdelivr.net/gh/dutsc/cloud-image/blog-img/202401092307390.gif" srcset="/img/loading.gif" lazyload alt="Jacobi解码迭代过程"></p>
 <p>这种方法虽然可以实现一次前向传播生成多个token，但是其正确性很差，违背了并行解码的初衷。</p>
-<h2 id="Lookahead-解码"><a href="#Lookahead-解码" class="headerlink" title="Lookahead 解码"></a>Lookahead 解码</h2><p>缓存每次前向传播的结果，若在verify阶段遇到不匹配的，把确定正确的覆盖掉之后，再从缓存中找是否有新的token的2-gram对</p>
+<p><strong>问题：</strong></p>
+<p>每次Jacobi解码都是要迭代到一定次数，稳定之后才结束本次解码的吗？这样难道不会带来额外的时延overhead？（这个问题要看代码解决）</p>
+<h2 id="Lookahead-解码"><a href="#Lookahead-解码" class="headerlink" title="Lookahead 解码"></a>Lookahead 解码</h2><p>我们注意到，每次Jacobi解码都会在每一个token位置上生成一个推理结果对。缓存每次前向传播的结果对，若在verify阶段遇到不匹配的，把确定正确的覆盖掉之后，再从缓存中找是否有新的token匹配的前向传播结果对。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/dutsc/cloud-image/blog-img/202401100915706.gif" srcset="/img/loading.gif" lazyload alt="Lookahead解码"></p>
+<p>W：lookahead windows size</p>
+<p>N：the N-gram size</p>
+<p>核心思想：以计算量换低延迟</p>
+<p>实验结果表明，在 A100 上，表 1 中的以下配置在大多数情况下运行良好。 7B、13B 和 33B 模型每步分别需要 120x、80x 和 56x 额外的 FLOP。 然而，由于 LLM 解码的内存密集型限制特性，这些额外的 FLOP 只带来很少的每步成本和可见的步压缩比，从而带来显着的加速。</p>
+<table>
+<thead>
+<tr>
+<th align="center"><strong>Model</strong></th>
+<th align="center"><strong>Window Size (W)</strong></th>
+<th align="center"><strong>N-gram Size (N)</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">7B</td>
+<td align="center">15</td>
+<td align="center">5</td>
+</tr>
+<tr>
+<td align="center">13B</td>
+<td align="center">10</td>
+<td align="center">5</td>
+</tr>
+<tr>
+<td align="center">33B</td>
+<td align="center">7</td>
+<td align="center">5</td>
+</tr>
+</tbody></table>
 
                 
               </div>
