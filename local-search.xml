@@ -4,6 +4,25 @@
   
   
   <entry>
+    <title>NSL-Spec-System-Optimization</title>
+    <link href="/2024/01/15/NSL-Spec-System-Optimization/"/>
+    <url>/2024/01/15/NSL-Spec-System-Optimization/</url>
+    
+    <content type="html"><![CDATA[<p>虽然NSL-Spec是为科研手搓的投机推理系统，但经过实测发现多进程存在很大的性能问题。本篇记录一下笔者在打log发现系统性能瓶颈并解决的过程。</p>]]></content>
+    
+    
+    
+    <tags>
+      
+      <tag>科研</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
     <title>Medusa</title>
     <link href="/2024/01/08/Medusa/"/>
     <url>/2024/01/08/Medusa/</url>
