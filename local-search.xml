@@ -8,7 +8,7 @@
     <link href="/2024/01/15/NSL-Spec-System-Optimization/"/>
     <url>/2024/01/15/NSL-Spec-System-Optimization/</url>
     
-    <content type="html"><![CDATA[<p>虽然NSL-Spec是为科研手搓的投机推理系统，但经过实测发现多进程存在很大的性能问题。本篇记录一下笔者在打log发现系统性能瓶颈并解决的过程。</p>]]></content>
+    <content type="html"><![CDATA[<p>虽然NSL-Spec是为科研手搓的投机推理系统，但经过实测发现多进程存在很大的性能问题。本篇记录一下笔者在打log发现系统性能瓶颈并解决的过程。</p><h1 id="使用DeepSpeed单机多卡推理"><a href="#使用DeepSpeed单机多卡推理" class="headerlink" title="使用DeepSpeed单机多卡推理"></a>使用DeepSpeed单机多卡推理</h1><h2 id="安装问题"><a href="#安装问题" class="headerlink" title="安装问题"></a>安装问题</h2><p>安装DeepSpeed时出现了一个小插曲，直接使用pip install deepspeed会报错：</p><p><img src="https://cdn.jsdelivr.net/gh/dutsc/cloud-image/blog-img/202401180936931.png" alt="deepspeed安装报错"></p><p>注意到是找不到nvcc路径。我检查了环境变量发现CUDA_HOME的值是<code>/usr/local/cuda/bin</code>，猜想应该是安装时读取CUDA_HOME 然后直接拼凑&#x2F;bin&#x2F;nvcc…</p><p>经过尝试编辑<code>~/.bashrc</code>CUDA_HOME不能改成<code>export CUDA_HOME=/usr/local/cuda/bin:/usr/local/cuda</code>这种形式，想改成这种形式主要是为了避免别的程序出问题。于是最后只好作罢，老老实实把CUDA_HOME改成<code>/usr/local/cuda</code>，然后将Path改成<code>export PATH=$PATH:$CUDA_HOME/bin</code>。<code>source ~/.bashrc</code>之后安装成功。</p>]]></content>
     
     
     
