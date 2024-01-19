@@ -279,7 +279,7 @@
       
       <a class="index-excerpt index-excerpt__noimg" href="/2024/01/15/NSL-Spec-System-Optimization/" target="_self">
         <div>
-          虽然NSL-Spec是为科研手搓的投机推理系统，但经过实测发现多进程存在很大的性能问题。本篇记录一下笔者在打log发现系统性能瓶颈并解决的过程。 使用DeepSpeed单机多卡推理安装问题安装DeepSpeed时出现了一个小插曲，直接使用pip install deepspeed会报错：  注意到是找不到nvcc路径。我检查了环境变量发现CUDA_HOME的值是/usr/local/cuda/bi
+          虽然NSL-Spec是为科研手搓的投机推理系统，但经过实测发现多进程存在很大的性能问题。本篇记录一下笔者在打log发现系统性能瓶颈并解决的过程。 优化进程之间消息传递时间不固定的问题为了实现多个小模型并行进行自回归推理，同时避开python的GIL问题，故使用多进程加载小模型，每个小模型放置在一个单独的进程上。初步写代码发现小模型推理的time_line如下所示：  其中蓝色线表示把小模型自回归所
         </div>
       </a>
 

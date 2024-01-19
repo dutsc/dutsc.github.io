@@ -16,20 +16,22 @@
   <meta name="author" content="dutsc">
   <meta name="keywords" content="">
   
-    <meta name="description" content="虽然NSL-Spec是为科研手搓的投机推理系统，但经过实测发现多进程存在很大的性能问题。本篇记录一下笔者在打log发现系统性能瓶颈并解决的过程。 使用DeepSpeed单机多卡推理安装问题安装DeepSpeed时出现了一个小插曲，直接使用pip install deepspeed会报错：  注意到是找不到nvcc路径。我检查了环境变量发现CUDA_HOME的值是&#x2F;usr&#x2F;local&#x2F;cuda&#x2F;bi">
+    <meta name="description" content="虽然NSL-Spec是为科研手搓的投机推理系统，但经过实测发现多进程存在很大的性能问题。本篇记录一下笔者在打log发现系统性能瓶颈并解决的过程。 优化进程之间消息传递时间不固定的问题为了实现多个小模型并行进行自回归推理，同时避开python的GIL问题，故使用多进程加载小模型，每个小模型放置在一个单独的进程上。初步写代码发现小模型推理的time_line如下所示：  其中蓝色线表示把小模型自回归所">
 <meta property="og:type" content="article">
 <meta property="og:title" content="NSL-Spec-System-Optimization">
 <meta property="og:url" content="http://example.com/2024/01/15/NSL-Spec-System-Optimization/index.html">
 <meta property="og:site_name" content="dutsc的个人博客">
-<meta property="og:description" content="虽然NSL-Spec是为科研手搓的投机推理系统，但经过实测发现多进程存在很大的性能问题。本篇记录一下笔者在打log发现系统性能瓶颈并解决的过程。 使用DeepSpeed单机多卡推理安装问题安装DeepSpeed时出现了一个小插曲，直接使用pip install deepspeed会报错：  注意到是找不到nvcc路径。我检查了环境变量发现CUDA_HOME的值是&#x2F;usr&#x2F;local&#x2F;cuda&#x2F;bi">
+<meta property="og:description" content="虽然NSL-Spec是为科研手搓的投机推理系统，但经过实测发现多进程存在很大的性能问题。本篇记录一下笔者在打log发现系统性能瓶颈并解决的过程。 优化进程之间消息传递时间不固定的问题为了实现多个小模型并行进行自回归推理，同时避开python的GIL问题，故使用多进程加载小模型，每个小模型放置在一个单独的进程上。初步写代码发现小模型推理的time_line如下所示：  其中蓝色线表示把小模型自回归所">
 <meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/dutsc/cloud-image/blog-img/202401191851380.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/dutsc/cloud-image/blog-img/202401191902277.png">
 <meta property="og:image" content="https://cdn.jsdelivr.net/gh/dutsc/cloud-image/blog-img/202401180936931.png">
 <meta property="article:published_time" content="2024-01-15T07:23:51.000Z">
-<meta property="article:modified_time" content="2024-01-18T01:41:01.634Z">
+<meta property="article:modified_time" content="2024-01-19T11:03:36.581Z">
 <meta property="article:author" content="dutsc">
 <meta property="article:tag" content="科研">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/dutsc/cloud-image/blog-img/202401180936931.png">
+<meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/dutsc/cloud-image/blog-img/202401191851380.png">
   
   
   
@@ -267,7 +269,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          452 字
+          915 字
         
       </span>
     
@@ -279,7 +281,7 @@
         
         
           <!-- compatible with older versions-->
-          3 分钟
+          5 分钟
         
       </span>
     
@@ -329,7 +331,7 @@
               <p class="note note-info">
                 
                   
-                    本文最后更新于：34 分钟前
+                    本文最后更新于：几秒前
                   
                 
               </p>
@@ -338,10 +340,17 @@
               <div class="markdown-body">
                 
                 <p>虽然NSL-Spec是为科研手搓的投机推理系统，但经过实测发现多进程存在很大的性能问题。本篇记录一下笔者在打log发现系统性能瓶颈并解决的过程。</p>
+<h1 id="优化进程之间消息传递时间不固定的问题"><a href="#优化进程之间消息传递时间不固定的问题" class="headerlink" title="优化进程之间消息传递时间不固定的问题"></a>优化进程之间消息传递时间不固定的问题</h1><p>为了实现多个小模型并行进行自回归推理，同时避开python的GIL问题，故使用多进程加载小模型，每个小模型放置在一个单独的进程上。初步写代码发现小模型推理的time_line如下所示：</p>
+<p><img src="https://cdn.jsdelivr.net/gh/dutsc/cloud-image/blog-img/202401191851380.png" srcset="/img/loading.gif" lazyload alt="修复前timeline"></p>
+<p>其中蓝色线表示把小模型自回归所需数据传输到进程中的时刻，红色线表示小模型自回归推理进程接收到数据的时刻，横轴表示时间，单位是ms，纵轴表示每一个步骤。可以发现，红色线和蓝色线之间的距离很远，这表明进程之间的队列消息传输花费了很长时间。</p>
+<p>经过检查发现原因是每次投机推理迭代在队列中传递了小模型…这是造成进程间通信缓慢的原因。于是将加载小模型的过程放在小模型进程中而不是每次都传递小模型，timeline如下：</p>
+<p><img src="https://cdn.jsdelivr.net/gh/dutsc/cloud-image/blog-img/202401191902277.png" srcset="/img/loading.gif" lazyload alt="修复后timeline"></p>
+<p>可以看到蓝色线和红色线之间的距离很短，进程间通信时间已经缩短到数ms，不再是性能瓶颈。</p>
 <h1 id="使用DeepSpeed单机多卡推理"><a href="#使用DeepSpeed单机多卡推理" class="headerlink" title="使用DeepSpeed单机多卡推理"></a>使用DeepSpeed单机多卡推理</h1><h2 id="安装问题"><a href="#安装问题" class="headerlink" title="安装问题"></a>安装问题</h2><p>安装DeepSpeed时出现了一个小插曲，直接使用pip install deepspeed会报错：</p>
 <p><img src="https://cdn.jsdelivr.net/gh/dutsc/cloud-image/blog-img/202401180936931.png" srcset="/img/loading.gif" lazyload alt="deepspeed安装报错"></p>
 <p>注意到是找不到nvcc路径。我检查了环境变量发现CUDA_HOME的值是<code>/usr/local/cuda/bin</code>，猜想应该是安装时读取CUDA_HOME 然后直接拼凑&#x2F;bin&#x2F;nvcc…</p>
 <p>经过尝试编辑<code>~/.bashrc</code>CUDA_HOME不能改成<code>export CUDA_HOME=/usr/local/cuda/bin:/usr/local/cuda</code>这种形式，想改成这种形式主要是为了避免别的程序出问题。于是最后只好作罢，老老实实把CUDA_HOME改成<code>/usr/local/cuda</code>，然后将Path改成<code>export PATH=$PATH:$CUDA_HOME/bin</code>。<code>source ~/.bashrc</code>之后安装成功。</p>
+<p>由于DeepSpeed加载模型权重的策略是：将一个模型权重文件重复加载到4块GPU上，在张量并行时只使用相应的部分。4块RTX 3090加载OPT-6.7b模型时就会出现OOM，<strong>故不再使用DeepSpeed做并行推理</strong>。</p>
 
                 
               </div>
