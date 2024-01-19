@@ -16,23 +16,32 @@
   <meta name="author" content="dutsc">
   <meta name="keywords" content="">
   
-    <meta name="description" content="dutsc的个人博客">
-<meta property="og:type" content="website">
-<meta property="og:title" content="归档">
-<meta property="og:url" content="http://example.com/archives/2024/01/index.html">
+    <meta name="description" content="GPT-fast偶然发现Pytorch官方在2023年11月30号写了这个blog：https:&#x2F;&#x2F;pytorch.org&#x2F;blog&#x2F;accelerating-generative-ai-2&#x2F;，使用不到1000行pytorch原生代码实现针对大语言模型推理加速，于是拿来学习一番。 github仓库地址：https:&#x2F;&#x2F;github.com&#x2F;pytorch-labs&#x2F;gpt-fast 该项目主要从以">
+<meta property="og:type" content="article">
+<meta property="og:title" content="gpt-fast">
+<meta property="og:url" content="http://example.com/2024/01/19/gpt-fast/index.html">
 <meta property="og:site_name" content="dutsc的个人博客">
-<meta property="og:description" content="dutsc的个人博客">
+<meta property="og:description" content="GPT-fast偶然发现Pytorch官方在2023年11月30号写了这个blog：https:&#x2F;&#x2F;pytorch.org&#x2F;blog&#x2F;accelerating-generative-ai-2&#x2F;，使用不到1000行pytorch原生代码实现针对大语言模型推理加速，于是拿来学习一番。 github仓库地址：https:&#x2F;&#x2F;github.com&#x2F;pytorch-labs&#x2F;gpt-fast 该项目主要从以">
 <meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2024-01-19T15:50:53.000Z">
+<meta property="article:modified_time" content="2024-01-19T15:55:05.630Z">
 <meta property="article:author" content="dutsc">
+<meta property="article:tag" content="科研">
 <meta name="twitter:card" content="summary_large_image">
   
   
   
-  <title>归档 - dutsc的个人博客</title>
+  <title>gpt-fast - dutsc的个人博客</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
 
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
 
 
 
@@ -115,7 +124,7 @@
   <header>
     
 
-<div class="header-inner" style="height: 60vh;">
+<div class="header-inner" style="height: 70vh;">
   <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
   <div class="container">
     <a class="navbar-brand" href="/">
@@ -233,9 +242,58 @@
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle" data-typed-text="归档"></span>
+            <span id="subtitle" data-typed-text="gpt-fast"></span>
           
         </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2024-01-19 23:50" pubdate>
+          2024年1月19日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          371 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          <!-- compatible with older versions-->
+          2 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
 
         
       </div>
@@ -251,64 +309,211 @@
 
   <main>
     
-      <div class="container nopadding-x-md">
-        <div id="board"
-          >
-          
-          <div class="container">
-            <div class="row">
-              <div class="col-12 col-md-10 m-auto">
-                
-
-<div class="list-group">
-  <p class="h4">共计 8 篇文章</p>
-  <hr>
-  
-  
-    
       
-      <p class="h5">2024</p>
-    
-    <a href="/2024/01/19/gpt-fast/" class="list-group-item list-group-item-action">
-      <time>01-19</time>
-      <div class="list-group-item-title">gpt-fast</div>
-    </a>
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">gpt-fast</h1>
+            
+              <p class="note note-info">
+                
+                  
+                    本文最后更新于：几秒前
+                  
+                
+              </p>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="GPT-fast"><a href="#GPT-fast" class="headerlink" title="GPT-fast"></a>GPT-fast</h1><p>偶然发现Pytorch官方在2023年11月30号写了这个blog：<a target="_blank" rel="noopener" href="https://pytorch.org/blog/accelerating-generative-ai-2/%EF%BC%8C%E4%BD%BF%E7%94%A8%E4%B8%8D%E5%88%B01000%E8%A1%8Cpytorch%E5%8E%9F%E7%94%9F%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0%E9%92%88%E5%AF%B9%E5%A4%A7%E8%AF%AD%E8%A8%80%E6%A8%A1%E5%9E%8B%E6%8E%A8%E7%90%86%E5%8A%A0%E9%80%9F%EF%BC%8C%E4%BA%8E%E6%98%AF%E6%8B%BF%E6%9D%A5%E5%AD%A6%E4%B9%A0%E4%B8%80%E7%95%AA%E3%80%82">https://pytorch.org/blog/accelerating-generative-ai-2/，使用不到1000行pytorch原生代码实现针对大语言模型推理加速，于是拿来学习一番。</a></p>
+<p>github仓库地址：<a target="_blank" rel="noopener" href="https://github.com/pytorch-labs/gpt-fast">https://github.com/pytorch-labs/gpt-fast</a></p>
+<p>该项目主要从以下四个方面进行LLM推理加速：</p>
+<ul>
+<li>Torch.compile：PyTorch 模型的编译器</li>
+<li>GPU 量化：通过降低精度运算来加速模型</li>
+<li>推测性解码：使用小型“草稿”模型来预测大型“目标”模型的输出来加速法学硕士</li>
+<li>张量并行：通过在多个设备上运行模型来加速模型。</li>
+</ul>
+<p>想了解具体细节请参照github仓库代码和blog。本文主要记录笔者在学习代码和blog的过程中的心得。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
   
-    
-    <a href="/2024/01/15/NSL-Spec-System-Optimization/" class="list-group-item list-group-item-action">
-      <time>01-15</time>
-      <div class="list-group-item-title">NSL-Spec-System-Optimization</div>
-    </a>
   
-    
-    <a href="/2024/01/08/Medusa/" class="list-group-item list-group-item-action">
-      <time>01-08</time>
-      <div class="list-group-item-title">Medusa</div>
-    </a>
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E7%A7%91%E7%A0%94/" class="print-no-link">#科研</a>
+      
+    </div>
   
-    
-    <a href="/2024/01/08/TensorRT-LLM/" class="list-group-item list-group-item-action">
-      <time>01-08</time>
-      <div class="list-group-item-title">TensorRT-LLM</div>
-    </a>
+</div>
+
+
+              
   
-    
-    <a href="/2024/01/05/spark%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/" class="list-group-item list-group-item-action">
-      <time>01-05</time>
-      <div class="list-group-item-title">spark学习记录</div>
-    </a>
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>gpt-fast</div>
+      <div>http://example.com/2024/01/19/gpt-fast/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>dutsc</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2024年1月19日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2024/01/15/NSL-Spec-System-Optimization/" title="NSL-Spec-System-Optimization">
+                        <span class="hidden-mobile">NSL-Spec-System-Optimization</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
   
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.5.1/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"znnF2Oz54UgHanY4ku1ECw1d-gzGzoHsz","appKey":"OusddZKdtXbjLqzj71mD9UUu","path":"window.location.pathname","placeholder":"说点什么","avatar":"retro","meta":["nick","mail","link"],"requiredFields":[],"pageSize":10,"lang":"zh-CN","highlight":true,"recordIP":false,"serverURLs":"","emojiCDN":null,"emojiMaps":null,"enableQQ":true},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
 </div>
 
 
 
 
 
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
     
 
     
@@ -459,6 +664,99 @@
 
 
 
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
 
   <script defer src="/js/leancloud.js" ></script>
 
