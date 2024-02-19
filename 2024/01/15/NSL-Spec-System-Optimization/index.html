@@ -26,8 +26,9 @@
 <meta property="og:image" content="https://cdn.jsdelivr.net/gh/dutsc/cloud-image/blog-img/202401191851380.png">
 <meta property="og:image" content="https://cdn.jsdelivr.net/gh/dutsc/cloud-image/blog-img/202401191902277.png">
 <meta property="og:image" content="https://cdn.jsdelivr.net/gh/dutsc/cloud-image/blog-img/202401180936931.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/dutsc/cloud-image/blog-img/202402182051041.png">
 <meta property="article:published_time" content="2024-01-15T07:23:51.000Z">
-<meta property="article:modified_time" content="2024-01-19T11:03:36.581Z">
+<meta property="article:modified_time" content="2024-02-19T08:32:40.894Z">
 <meta property="article:author" content="dutsc">
 <meta property="article:tag" content="科研">
 <meta name="twitter:card" content="summary_large_image">
@@ -269,7 +270,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          915 字
+          2.1k 字
         
       </span>
     
@@ -281,7 +282,7 @@
         
         
           <!-- compatible with older versions-->
-          5 分钟
+          11 分钟
         
       </span>
     
@@ -331,7 +332,7 @@
               <p class="note note-info">
                 
                   
-                    本文最后更新于：11 天前
+                    本文最后更新于：1 分钟前
                   
                 
               </p>
@@ -351,6 +352,31 @@
 <p>注意到是找不到nvcc路径。我检查了环境变量发现CUDA_HOME的值是<code>/usr/local/cuda/bin</code>，猜想应该是安装时读取CUDA_HOME 然后直接拼凑&#x2F;bin&#x2F;nvcc…</p>
 <p>经过尝试编辑<code>~/.bashrc</code>CUDA_HOME不能改成<code>export CUDA_HOME=/usr/local/cuda/bin:/usr/local/cuda</code>这种形式，想改成这种形式主要是为了避免别的程序出问题。于是最后只好作罢，老老实实把CUDA_HOME改成<code>/usr/local/cuda</code>，然后将Path改成<code>export PATH=$PATH:$CUDA_HOME/bin</code>。<code>source ~/.bashrc</code>之后安装成功。</p>
 <p>由于DeepSpeed加载模型权重的策略是：将一个模型权重文件重复加载到4块GPU上，在张量并行时只使用相应的部分。4块RTX 3090加载OPT-6.7b模型时就会出现OOM，<strong>故不再使用DeepSpeed做并行推理</strong>。</p>
+<h1 id="SpecInfer源码研读"><a href="#SpecInfer源码研读" class="headerlink" title="SpecInfer源码研读"></a>SpecInfer源码研读</h1><p>由于自己实现的系统与SpecInfer产生的结果有较大差异，而且按照SpecInfer论文中的伪代码实现并不能得到正确的结果，于是研读SpecInfer源码，看其如何实现验证模型对于小模型产生token的接受与拒绝。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/dutsc/cloud-image/blog-img/202402182051041.png" srcset="/img/loading.gif" lazyload alt="flexflow流程图"></p>
+<ul>
+<li><p>prepare_next_batch_verify 猜测是在进行将小模型的所有output转成 new_bc 具体有什么区别？</p>
+<p>输入是old_batches  vector&lt;BeamSearchBatchConfig&gt;   </p>
+<p>输出是new_bc  TreeVerifyBatchConfig</p>
+</li>
+<li><p>committed_tokens：用于跟踪每个请求中已经处理过的令牌。这个数据结构是一个映射（map），其中键是请求的唯一标识符（GUID），值是一个向量，存储了每个令牌的绝对深度和在结果中的索引（是request中的第几个token）。 committed_tokens[guid].emplace_back(abs_depth, result_index);</p>
+</li>
+</ul>
+<p>traverse_verify_tree 函数中，verifiedTree和new_committed_tokens有什么区别？  验证通过  与  已提交？？</p>
+<h2 id="代码分段解析"><a href="#代码分段解析" class="headerlink" title="代码分段解析"></a>代码分段解析</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs python">const std::lock_guard&lt;std::mutex&gt; lock(request_queue_mutex);<br><span class="hljs-keyword">if</span> (verbose) &#123;<br>    std::cout &lt;&lt; <span class="hljs-string">&quot;\n############### prepare_next_batch_init ###############\n&quot;</span>;<br>&#125;<br><br>std::cout &lt;&lt; <span class="hljs-string">&quot;\n############### prepare_next_batch_init ###############\n&quot;</span>;<br><br>// Step <span class="hljs-number">1</span>: use result to update requests<br>BeamSearchBatchConfig new_bc;<br>new_bc.num_tokens = <span class="hljs-number">0</span>;<br>new_bc.model_id = model_id;<br><span class="hljs-built_in">int</span> result_index = <span class="hljs-number">0</span>;<br></code></pre></td></tr></table></figure>
+
+<p>这段代码主要干了两件事：</p>
+<ol>
+<li>获取请求队列的锁,用于互斥访问请求队列。</li>
+<li>初始化新一批次的配置new_bc。包括:<ul>
+<li>加锁后,打印日志表示进入准备新批次数据的逻辑</li>
+<li>新批次配置new_bc中令牌数num_tokens初始化为0</li>
+<li>设置新批次配置的模型ID</li>
+<li>result_index变量初始化为0,用于遍历结果集</li>
+</ul>
+</li>
+</ol>
+<p>获取请求队列锁是为了确保线程安全,在更新请求队列、生成新批次配置时,互斥访问和修改数据。初始化new_bc是准备新一轮批次配置的基础工作,先构造一个空的、干净的批次配置,后面将在这个基础上逐步填充新一轮的请求信息、令牌信息。</p>
 
                 
               </div>
